@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Masuk · Kayuputih Family Reflexology</title>
+<meta name="theme-color" content="#493020">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('kp_theme')||'light'}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="login.css">
+</head>
+<body>
+<div class="auth">
+  <aside class="auth-brand">
+    <a href="index.html" class="back">← Kembali ke website</a>
+    <div class="ab-c"><div id="bLogo"></div><h1>Relax Your Body,<br><span>Refresh Your Mind</span></h1><p>Masuk untuk reservasi, melihat riwayat dan poin member, atau mengelola operasional.</p></div>
+    <small>© 2026 Kayuputih Family Reflexology · Developed by benyoriki.com</small>
+  </aside>
+  <main class="auth-main">
+    <button class="icon-btn theme" data-theme-toggle data-theme-ic aria-label="Ganti tema"></button>
+    <div class="auth-card">
+      <div class="tabs2" role="tablist"><button class="on" data-tab="login" role="tab">Masuk</button><button data-tab="register" role="tab">Daftar Member</button></div>
+      <div id="notice" class="notice" hidden></div>
+
+      <form id="loginForm" class="pane" novalidate>
+        <h2>Selamat datang</h2>
+        <div class="roles" role="radiogroup" aria-label="Pilih akses">
+          <label><input type="radio" name="role" value="member" checked><span>Member</span></label>
+          <label><input type="radio" name="role" value="admin"><span>Admin</span></label>
+          <label><input type="radio" name="role" value="supervisor"><span>Supervisor</span></label>
+        </div>
+        <div class="field"><label for="email">Email</label><input class="input" id="email" type="email" autocomplete="username" placeholder="email@contoh.com" required></div>
+        <div class="field"><label for="password">Password</label><div class="pw"><input class="input" id="password" type="password" autocomplete="current-password" required><button type="button" class="eye" data-eye aria-label="Tampilkan password"></button></div></div>
+        <div class="between"><label class="chk"><input type="checkbox" id="remember"> Ingat sesi saya</label><button type="button" class="link" data-tab="forgot">Lupa password?</button></div>
+        <div class="form-err" id="loginErr" role="alert"></div>
+        <button class="btn btn-primary btn-block" type="submit">Masuk</button>
+        <div class="demo"><b>Akun demo</b> <span>(password: <code>Kayuputih123</code>)</span><div id="demoList"></div><small>Autentikasi ini hanya simulasi di browser (LocalStorage) untuk demonstrasi — bukan keamanan produksi.</small></div>
+      </form>
+
+      <form id="regForm" class="pane" novalidate hidden>
+        <h2>Daftar Member Baru</h2>
+        <div class="field"><label for="rName">Nama lengkap</label><input class="input" id="rName" autocomplete="name" required></div>
+        <div class="two"><div class="field"><label for="rPhone">Nomor HP</label><input class="input" id="rPhone" type="tel" autocomplete="tel" placeholder="081234567890" required></div><div class="field"><label for="rBirth">Tanggal lahir (opsional)</label><input class="input" id="rBirth" type="date"></div></div>
+        <div class="field"><label for="rEmail">Email</label><input class="input" id="rEmail" type="email" autocomplete="email" required></div>
+        <div class="two"><div class="field"><label for="rPass">Password</label><input class="input" id="rPass" type="password" autocomplete="new-password" required><small class="hint">Min. 8 karakter, huruf dan angka</small></div><div class="field"><label for="rConf">Ulangi password</label><input class="input" id="rConf" type="password" autocomplete="new-password" required></div></div>
+        <div class="form-err" id="regErr" role="alert"></div>
+        <button class="btn btn-primary btn-block" type="submit">Buat Akun</button>
+      </form>
+
+      <form id="forgotForm" class="pane" novalidate hidden>
+        <h2>Lupa Password</h2>
+        <p class="muted small">Simulasi lokal: kode 6 digit dibuat di browser dan ditampilkan di layar (tanpa server email). Pada versi produksi kode dikirim lewat email/WhatsApp.</p>
+        <div id="fStep1"><div class="field"><label for="fEmail">Email akun</label><input class="input" id="fEmail" type="email" required></div><button class="btn btn-primary btn-block" type="button" id="fSend">Buat Kode Reset</button></div>
+        <div id="fStep2" hidden><div class="notice ok" id="fCode"></div><div class="field"><label for="fCodeIn">Kode reset</label><input class="input" id="fCodeIn" inputmode="numeric" maxlength="6"></div><div class="field"><label for="fNew">Password baru</label><input class="input" id="fNew" type="password" autocomplete="new-password"></div><button class="btn btn-primary btn-block" type="button" id="fDone">Simpan Password Baru</button></div>
+        <div class="form-err" id="fErr" role="alert"></div>
+        <button type="button" class="link" data-tab="login">← Kembali ke login</button>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="database.js"></script>
+<script src="components.js"></script>
+<script src="auth.js"></script>
+<script src="login.js"></script>
+</body>
+</html>

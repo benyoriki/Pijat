@@ -1,0 +1,4 @@
+/* supervisor.css — dashboard supervisor */
+.perf{display:grid;gap:14px}.perf-i{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.perf-i .bar{grid-column:2}.perf-i b{font-size:.9rem}
+.queue{display:grid;gap:10px}.q-i{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.q-i .t{font:800 1.1rem var(--font);min-width:56px}.q-i>div{flex:1;min-width:160px}.q-i small{color:var(--muted);display:block}
+.note-form{display:grid;gap:10px}

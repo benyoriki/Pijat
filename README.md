@@ -26,3 +26,10 @@ Semua file berada di root (tanpa folder) dan siap diunggah ke GitHub Pages: ungg
 
 ## Menuju Firebase
 Semua akses data lewat `DB` (`all/get/insert/update/remove/query`) dan `Auth`. Ganti implementasinya dengan Firebase Realtime Database / Firebase Authentication tanpa mengubah halaman.
+
+## Pembaruan 2026 (PWA & tampilan)
+- **Logo asli** (`logo.png`, `icon-*.png`, `favicon.png`) dipotong dari gambar logo Anda; menggantikan logo SVG buatan.
+- **Loading screen 4 detik** di `index.html` (murni CSS + sedikit JS, tampil sekali per sesi browser).
+- **PWA**: `manifest.webmanifest`, `sw.js`, `pwa.js`. Tombol ikon unduh muncul di header (dan di dashboard) saat browser mendukung instal; di iPhone tombol menampilkan panduan "Tambahkan ke Layar Utama". PWA hanya aktif lewat HTTPS (GitHub Pages sudah HTTPS).
+- Semua path relatif, sehingga aman di sub-path seperti `/Pijat/`.
+- Jika setelah update tampilan lama masih muncul, tutup lalu buka ulang aplikasi/tab (service worker memperbarui cache di latar belakang).

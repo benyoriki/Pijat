@@ -57,14 +57,9 @@
   UI.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
 
   /* ---------- logo ---------- */
-  const leaf = (x, y, a, s) => '<path transform="translate(' + x + ' ' + y + ') rotate(' + a + ') scale(' + (s || 1) + ')" d="M0 0Q7-11 19-5Q10 5 0 0z"/>';
   UI.logo = function (size, opts) {
-    opts = opts || {}; const s = DB.settings();
-    if (s.logo) return '<img class="logo-img" src="' + UI.esc(s.logo) + '" alt="Logo ' + UI.esc(s.businessName) + '" style="width:' + size + 'px;height:' + size + 'px" onerror="this.outerHTML=\'\'">';
-    return '<span class="logo' + (opts.mini ? ' mini' : '') + '" style="--s:' + size + 'px" role="img" aria-label="Logo Kayuputih Family Reflexology">' +
-      '<svg viewBox="0 0 100 50" aria-hidden="true"><path d="M8 38C30 27 62 24 94 35" stroke="#5a5a56" stroke-width="2.4" fill="none" stroke-linecap="round"/><g fill="#A8D92B">' +
-      leaf(20, 31, -35) + leaf(36, 29, -25) + leaf(52, 28, -5) + leaf(68, 30, 15) + leaf(26, 36, 20, .85) + leaf(42, 35, 10, .85) + leaf(60, 36, 35, .85) + '</g></svg>' +
-      (opts.mini ? '' : '<b>KAYUPUTIH</b><i>family reflexology</i>') + '</span>';
+    opts = opts || {}; const s = DB.settings(); const src = s.logo || 'logo.png';
+    return '<img class="logo-img" src="' + UI.esc(src) + '" alt="Logo ' + UI.esc(s.businessName) + '" width="' + size + '" height="' + size + '" style="width:' + size + 'px;height:' + size + 'px" decoding="async" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=\'logo.png\'}">';
   };
   UI.PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A6345"/><stop offset="1" stop-color="#493020"/></linearGradient></defs><rect width="400" height="300" fill="url(#g)"/><g fill="#A8D92B" opacity=".85"><path d="M150 180q20-50 80-40-20 50-80 40z"/><path d="M190 200q10-40 60-45-8 40-60 45z" opacity=".7"/></g></svg>');
   UI.img = (src, alt, cls) => '<img class="' + (cls || '') + '" src="' + UI.esc(src || UI.PLACEHOLDER) + '" alt="' + UI.esc(alt || '') + '" loading="lazy" onerror="this.onerror=null;this.src=UI.PLACEHOLDER">';
@@ -209,7 +204,7 @@
     const maxB = 4;
     const navLink = m => '<a href="#/' + m.id + '" data-nav="' + m.id + '">' + UI.icon(m.icon) + '<span>' + UI.esc(m.label) + '</span></a>';
     app.innerHTML = '<div class="dash role-' + cfg.role + '"><aside class="side" id="side"><div class="side-brand">' + UI.logo(46) + '<div><b>' + UI.esc(DB.settings().businessName.replace(' Palu', '')) + '</b><small>' + UI.esc(cfg.roleLabel) + '</small></div></div><nav class="side-nav">' + menu.map(navLink).join('') + '</nav><div class="side-foot"><a href="index.html">' + UI.icon('home') + '<span>Lihat Website</span></a><button data-logout>' + UI.icon('logout') + '<span>Logout</span></button></div></aside><div class="backdrop" id="backdrop"></div>' +
-      '<div class="main"><header class="topbar"><button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">' + UI.icon('menu') + '</button><h1 id="pageTitle"></h1><div class="grow"></div><button class="icon-btn" data-theme-toggle data-theme-ic aria-label="Ganti tema"></button><div class="np-wrap"><button class="icon-btn" id="bellBtn" aria-label="Notifikasi">' + UI.icon('bell') + '<span class="dot" id="bellDot" hidden>0</span></button><div class="np" id="notifPanel" hidden></div></div><div class="who">' + UI.avatar(user.name, cfg.photo || '', 'sm') + '<div><b>' + UI.esc(user.name) + '</b><small>' + UI.esc(cfg.roleLabel) + '</small></div></div></header><main class="view" id="view" tabindex="-1"></main></div>' +
+      '<div class="main"><header class="topbar"><button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">' + UI.icon('menu') + '</button><h1 id="pageTitle"></h1><div class="grow"></div><button class="icon-btn" data-install hidden aria-label="Instal aplikasi" title="Instal aplikasi">'+UI.icon('download')+'</button><button class="icon-btn" data-theme-toggle data-theme-ic aria-label="Ganti tema"></button><div class="np-wrap"><button class="icon-btn" id="bellBtn" aria-label="Notifikasi">' + UI.icon('bell') + '<span class="dot" id="bellDot" hidden>0</span></button><div class="np" id="notifPanel" hidden></div></div><div class="who">' + UI.avatar(user.name, cfg.photo || '', 'sm') + '<div><b>' + UI.esc(user.name) + '</b><small>' + UI.esc(cfg.roleLabel) + '</small></div></div></header><main class="view" id="view" tabindex="-1"></main></div>' +
       '<nav class="bottomnav">' + menu.slice(0, maxB).map(m => '<a href="#/' + m.id + '" data-nav="' + m.id + '">' + UI.icon(m.icon) + '<span>' + UI.esc(m.short || m.label) + '</span></a>').join('') + '<button id="moreBtn">' + UI.icon('menu') + '<span>Menu</span></button></nav></div>';
     const viewEl = UI.$('#view'), side = UI.$('#side'), back = UI.$('#backdrop');
     const openDrawer = o => { side.classList.toggle('open', o); back.classList.toggle('open', o); };
@@ -244,6 +239,7 @@
     }));
     window.addEventListener('hashchange', show);
     window.addEventListener('kp:change', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { if (view) draw(true); }); });
+    UI.setTheme(UI.theme()); if (global.PWA) PWA.refresh();
     show();
     return ctx;
   };

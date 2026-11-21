@@ -38,6 +38,7 @@
     plus: '<path d="M12 5v14M5 12h14"/>', edit: '<path d="M4 20h4L20 8l-4-4L4 16z"/>',
     trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',
     check: '<path d="M4 12l5 5L20 6"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+    cash: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9v.01M18 15v.01"/>', bank: '<path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/>', qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h3M21 17v4"/>', send: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
     print: '<path d="M6 9V3h12v6M6 18H3v-8h18v8h-3M6 14h12v7H6z"/>', download: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
     upload: '<path d="M12 15V3M7 8l5-5 5 5M4 21h16"/>',
     eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
@@ -194,7 +195,7 @@
   /* ---------- notifikasi ---------- */
   function notifHtml(user) {
     const list = DB.notifsFor(user).slice(0, 25);
-    const ic = { reservation: 'calendar', transaction: 'receipt', promo: 'tag', member: 'users', info: 'info' };
+    const ic = { payment: 'wallet', reservation: 'calendar', transaction: 'receipt', promo: 'tag', member: 'users', info: 'info' };
     return '<div class="np-h"><strong>Notifikasi</strong><button class="link" data-readall>Tandai dibaca</button></div>' + (list.length ? list.map(n => '<div class="np-i' + (n.readBy.includes(user.id) ? '' : ' unread') + '"><span class="np-ic">' + UI.icon(ic[n.type] || 'bell') + '</span><div><b>' + UI.esc(n.title) + '</b><p>' + UI.esc(n.msg) + '</p><small>' + UI.ago(n.createdAt) + '</small></div></div>').join('') : '<div class="empty small">Belum ada notifikasi</div>');
   }
 

@@ -7,7 +7,7 @@
 (function (global) {
   'use strict';
   const PREFIX = 'kp_';
-  const VERSION = 4;
+  const VERSION = 5;
   const COLS = ['users', 'members', 'services', 'reservations', 'transactions', 'therapists',
     'promotions', 'notifications', 'attendance', 'settings', 'activityLogs', 'gallery'];
 
@@ -41,8 +41,13 @@
   }
 
   /* ---------- storage ---------- */
+  const cache = {};   // cache hasil parse: JSON.parse hanya dijalankan ulang bila isi LocalStorage berubah
   function read(k, d) {
-    try { const v = localStorage.getItem(PREFIX + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; }
+    try {
+      const raw = localStorage.getItem(PREFIX + k); if (raw === null) return d;
+      let c = cache[k]; if (!c || c.raw !== raw) c = cache[k] = { raw, v: JSON.parse(raw) };
+      return Array.isArray(c.v) ? c.v.slice() : c.v;
+    } catch (e) { return d; }
   }
   function write(k, v) {
     try { localStorage.setItem(PREFIX + k, JSON.stringify(v)); return true; }
@@ -96,6 +101,7 @@
       phone: '', whatsapp: '', instagram: '', facebook: '',
       openTime: '10:00', closeTime: '22:00', slotMinutes: 60, cancelHours: 2, pointRate: 10000,
       rating: '4,8', reviews: 209, logo: '',
+      bankName: '', bankAccount: '', bankHolder: '', qrisImage: 'qris.webp', qrisName: 'QRIS', receiptNote: 'Terima kasih atas kunjungan Anda. Sampai jumpa kembali!',
       heroTitle: 'Rasakan Kenyamanan, Pulihkan Kesegaran Tubuh Anda',
       heroText: 'Temukan pengalaman relaksasi bersama Kayuputih Family Reflexology. Nikmati suasana nyaman, pelayanan ramah, dan pengalaman pijat yang membantu tubuh lebih rileks.',
       heroImage: IMG.hero,
@@ -115,6 +121,8 @@
     const pick = a => a[Math.floor(rng() * a.length)];
     const demoPass = hash('Kayuputih123');
     const now = new Date().toISOString();
+    const START = '2026-10-01' <= t ? '2026-10-01' : addDays(t, -30);   // rekap dimulai Oktober 2026
+    const span = Math.round((parseYmd(t) - parseYmd(START)) / 864e5);
 
     const users = [
       { id: 'u_admin', name: 'Admin Kayuputih', email: 'admin@kayuputih.demo', role: 'admin', passHash: demoPass, active: true, createdAt: now },
@@ -122,12 +130,9 @@
       { id: 'u_member', name: 'Budi Santoso', email: 'member@kayuputih.demo', role: 'member', passHash: demoPass, active: true, createdAt: now }
     ];
 
-    const mk = (id, n, name, phone, userId) => ({ id, userId: userId || null, number: 'KP-' + pad(n, 4), name, phone, email: '', birth: '', address: '', photo: '', points: 0, pointsHistory: [], vouchers: [], status: 'active', joinDate: addDays(t, -60 + n * 3), createdAt: now });
-    const members = [
-      Object.assign(mk('mem_budi', 1, 'Budi Santoso', '', 'u_member'), { email: 'member@kayuputih.demo' }),
-      mk('mem_2', 2, 'Siti Aminah', ''), mk('mem_3', 3, 'Rizky Pratama', ''),
-      mk('mem_4', 4, 'Dewi Lestari', ''), mk('mem_5', 5, 'Andi Wijaya', ''), mk('mem_6', 6, 'Maya Putri', '')
-    ];
+    const mk = (id, n, name, userId) => ({ id, userId: userId || null, number: 'KP-' + pad(n, 4), name, phone: '0812000' + pad(n, 4), email: '', birth: '', address: '', photo: '', points: 0, pointsHistory: [], vouchers: [], status: 'active', joinDate: addDays(t, -Math.min(span + 20, 80) + n * 3), createdAt: now });
+    const MN = ['Siti Aminah', 'Rizky Pratama', 'Dewi Lestari', 'Andi Wijaya', 'Maya Putri', 'Hendra Saputra', 'Nur Halimah', 'Fajar Ramadhan', 'Lestari Ningsih', 'Yusuf Maulana', 'Rina Wulandari', 'Ahmad Fauzi', 'Putri Ayu', 'Dian Kusuma'];
+    const members = [Object.assign(mk('mem_budi', 1, 'Budi Santoso', 'u_member'), { email: 'member@kayuputih.demo' })].concat(MN.map((n, i) => mk('mem_' + (i + 2), i + 2, n)));
 
     const sv = (id, name, cat, duration, price, desc, image) => ({ id, name, category: cat, duration, price, description: desc, image, active: true, demo: true, createdAt: now });
     const services = [
@@ -143,7 +148,7 @@
     const th = (id, name, phone) => ({ id, name, phone, photo: '', active: true, days: days.slice(), startTime: '10:00', endTime: '22:00', demo: true, createdAt: now });
     const therapists = [th('th_1', 'Sari', ''), th('th_2', 'Budi', ''), th('th_3', 'Ani', ''), th('th_4', 'Dewi', '')];
 
-    const promo = (id, title, kind, code, discType, value, endOff, img, desc, extra) => Object.assign({ id, title, kind, code, discType, value, startDate: t, endDate: addDays(t, endOff), image: img, description: desc, active: true, packagePrice: 0, pointsCost: 0, createdAt: now }, extra || {});
+    const promo = (id, title, kind, code, discType, value, endOff, img, desc, extra) => Object.assign({ id, title, kind, code, discType, value, startDate: START, endDate: addDays(t, endOff), image: img, description: desc, active: true, packagePrice: 0, pointsCost: 0, createdAt: now }, extra || {});
     const promotions = [
       promo('pro_1', 'Promo Hari Ini', 'Promo Hari Ini', 'HARIINI', 'percent', 10, 365, IMG.a, 'Diskon 10% untuk semua layanan (DEMO).'),
       promo('pro_2', 'Paket Couple', 'Paket Couple', 'COUPLE', 'nominal', 20000, 365, IMG.b, 'Datang berdua, hemat Rp 20.000 (DEMO).', { packagePrice: 150000 }),
@@ -162,65 +167,103 @@
       { id: 'gal_6', title: 'Area Resepsionis', category: 'Resepsionis', url: IMG.d }
     ];
 
-    /* transaksi 30 hari */
+    /* ---- transaksi: 1 Okt 2026 → hari ini, ±2× lebih ramai dari versi lama ---- */
     const rate = defaultSettings().pointRate;
-    const tx = []; const seqs = {};
-    const addTx = (date, mem, items, method, therapist) => {
+    const tx = []; const seqs = {}; const notifications = []; const activityLogs = [];
+    const digits = n => { let s = ''; for (let i = 0; i < n; i++) s += Math.floor(rng() * 10); return s; };
+    const BANKS = ['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI'];
+    const mAt = (date, min) => date + 'T' + pad(Math.floor(min / 60)) + ':' + pad(min % 60) + ':00';
+    const addTx = (date, min, mem, items, method, therapist, promoPick, unpaid) => {
       const subtotal = items.reduce((a, i) => a + i.price * i.qty, 0);
       const k = date.replace(/-/g, ''); seqs[k] = (seqs[k] || 0) + 1;
-      const total = subtotal;
-      tx.push({ id: 'trx_' + k + '_' + seqs[k], code: 'TRX' + k + '-' + pad(seqs[k], 3), date, memberId: mem ? mem.id : null, customerName: mem ? mem.name : 'Pelanggan Umum', items, subtotal, discount: 0, promoCode: '', total, method, payStatus: 'lunas', therapistId: therapist, reservationId: '', pointsAwarded: !!mem, createdAt: date + 'T' + pad(10 + Math.floor(rng() * 11)) + ':' + pad(Math.floor(rng() * 60)) + ':00' });
-      if (mem) { const p = Math.floor(total / rate); mem.points += p; mem.pointsHistory.push({ date, text: 'Transaksi TRX' + k + '-' + pad(seqs[k], 3), points: p }); }
-    };
-    for (let i = 29; i >= 0; i--) {
-      const date = addDays(t, -i); const n = 2 + Math.floor(rng() * 4);
-      for (let j = 0; j < n; j++) {
-        const s1 = pick(services);
-        const items = [{ serviceId: s1.id, name: s1.name, duration: s1.duration, price: s1.price, qty: 1 }];
-        if (rng() < 0.2) { const s2 = pick(services); items.push({ serviceId: s2.id, name: s2.name, duration: s2.duration, price: s2.price, qty: 1 }); }
-        let mem = rng() < 0.6 ? pick(members) : null;
-        if (j === 0 && (i === 20 || i === 9 || i === 2)) mem = members[0];
-        else if (mem && mem.id === 'mem_budi') mem = members[1];
-        addTx(date, mem, items, pick(['tunai', 'transfer', 'qris']), pick(therapists).id);
+      const code = 'TRX' + k + '-' + pad(seqs[k], 3);
+      let discount = 0, promoCode = '';
+      if (promoPick) { discount = promoPick.discType === 'percent' ? Math.round(subtotal * promoPick.value / 100) : promoPick.value; promoCode = promoPick.code; }
+      const total = subtotal - discount;
+      const o = { id: 'trx_' + k + '_' + seqs[k], code, date, memberId: mem ? mem.id : null, customerName: mem ? mem.name : pick(['Pelanggan Umum', 'Pelanggan Umum', 'Pelanggan Umum', 'Tamu Walk-in']), items, subtotal, discount, promoCode, total, method, payStatus: unpaid ? 'belum' : 'lunas', therapistId: therapist, reservationId: '', pointsAwarded: !!mem && !unpaid, cashier: 'Admin Kayuputih', createdAt: mAt(date, min) };
+      if (!unpaid) {
+        o.paidAt = o.createdAt;
+        if (method === 'tunai') { const r = pick([5000, 10000, 50000, 100000]); o.paidAmount = Math.max(total, Math.ceil(total / r) * r); o.change = o.paidAmount - total; }
+        else { o.paidAmount = total; o.change = 0; o.payRef = (method === 'qris' ? 'QRIS' + digits(10) : 'TRF' + digits(8)); if (method === 'transfer') o.payBank = pick(BANKS); }
       }
+      tx.push(o);
+      if (mem && !unpaid) { const p = Math.floor(total / rate); mem.points += p; mem.pointsHistory.push({ date, text: 'Transaksi ' + code, points: p }); }
+      return o;
+    };
+    const nowM = nowMin();
+    for (let i = span; i >= 0; i--) {
+      const date = addDays(t, -i); const wd = weekdayOf(date);
+      let n = wd === 0 || wd === 6 ? 8 + Math.floor(rng() * 5) : wd === 5 ? 6 + Math.floor(rng() * 4) : 4 + Math.floor(rng() * 5);   // 4–12 per hari
+      let maxMin = 21 * 60 + 30;
+      if (i === 0) { maxMin = Math.min(maxMin, nowM); n = maxMin < 630 ? 0 : Math.max(1, Math.round(n * (maxMin - 600) / 690)); }
+      const times = []; for (let j = 0; j < n; j++) times.push(600 + Math.floor(rng() * Math.max(1, maxMin - 600))); times.sort((a, b) => a - b);
+      times.forEach((min, j) => {
+        const s1 = pick(services); const items = [{ serviceId: s1.id, name: s1.name, duration: s1.duration, price: s1.price, qty: s1.id === 'svc_5' && rng() < .4 ? 2 : 1 }];
+        if (rng() < 0.22) { const s2 = pick(services); if (s2.id !== s1.id) items.push({ serviceId: s2.id, name: s2.name, duration: s2.duration, price: s2.price, qty: 1 }); }
+        let mem = rng() < 0.6 ? pick(members) : null;
+        if (j === 0 && (i === 20 || i === 9 || i === 2)) mem = members[0]; else if (mem && mem.id === 'mem_budi') mem = members[1];
+        const pr = rng() < 0.16 ? pick([promotions[0], promotions[2], promotions[3]]) : null;
+        const unpaid = i <= 4 && j === times.length - 1 && rng() < 0.45;
+        const m = rng(); const method = m < 0.42 ? 'tunai' : m < 0.78 ? 'qris' : 'transfer';
+        addTx(date, min, mem, items, unpaid ? 'tunai' : method, pick(therapists).id, pr, unpaid);
+      });
     }
     members[0].vouchers = [];
 
-    /* reservasi */
+    /* ---- reservasi: 1 Okt → 7 hari ke depan ---- */
     const reservations = []; const rsq = {};
-    const times = ['10:00', '11:00', '13:00', '15:00', '17:00', '19:00'];
     const hourNow = new Date().getHours();
-    for (let d = -3; d <= 2; d++) {
-      const date = addDays(t, d); const n = d === 0 ? 5 : 3;
+    const WALK = ['Hasan', 'Lina', 'Agus', 'Wati', 'Ferdi', 'Citra', 'Bayu', 'Rosa'];
+    for (let d = -span; d <= 7; d++) {
+      const date = addDays(t, d); const n = d === 0 ? 8 : d < 0 ? 3 + Math.floor(rng() * 6) : 4 + Math.floor(rng() * 4);
+      const busy = {};
       for (let k = 0; k < n; k++) {
-        const mem = k === 0 && d === 1 ? members[0] : pick(members.slice(1));
-        const s = pick(services); const time = times[(k * 2 + (d + 3)) % times.length];
-        const used = reservations.filter(r => r.date === date && r.time === time).length;
-        if (used) continue;
+        const h = 10 + Math.floor(rng() * 11); const time = pad(h) + ':00'; const s = pick(services);
+        if (h * 60 + s.duration > 22 * 60) continue;
+        const free = therapists.filter(x => !(busy[x.id] || []).some(b => b[0] < h * 60 + s.duration && b[1] > h * 60)); if (!free.length) continue;
+        const th = free[Math.floor(rng() * free.length)]; (busy[th.id] = busy[th.id] || []).push([h * 60, h * 60 + s.duration]);
+        const mem = k === 0 && d === 1 ? members[0] : rng() < .7 ? pick(members.slice(1)) : null;
         let status;
-        if (d < 0) status = rng() < 0.15 ? 'cancelled' : 'done';
-        else if (d > 0) status = rng() < 0.5 ? 'confirmed' : 'pending';
-        else { const h = parseInt(time, 10); status = h + 1 <= hourNow ? 'done' : h <= hourNow ? 'serving' : rng() < 0.5 ? 'confirmed' : 'pending'; }
+        if (d < 0) status = rng() < 0.12 ? 'cancelled' : 'done';
+        else if (d > 0) status = rng() < 0.62 ? 'confirmed' : 'pending';
+        else status = h + 1 <= hourNow ? 'done' : h <= hourNow ? 'serving' : rng() < 0.6 ? 'confirmed' : 'pending';
         const key = date.replace(/-/g, ''); rsq[key] = (rsq[key] || 0) + 1;
-        reservations.push({ id: 'res_' + key + '_' + rsq[key], code: 'RES' + key + '-' + pad(rsq[key], 3), memberId: mem.id, customerName: mem.name, phone: mem.phone, serviceId: s.id, serviceName: s.name, duration: s.duration, price: s.price, therapistId: therapists[k % therapists.length].id, date, time, notes: '', status, source: 'seed', createdAt: addDays(t, d - 1) + 'T09:00:00' });
+        reservations.push({ id: 'res_' + key + '_' + rsq[key], code: 'RES' + key + '-' + pad(rsq[key], 3), memberId: mem ? mem.id : null, customerName: mem ? mem.name : pick(WALK), phone: mem ? mem.phone : '', serviceId: s.id, serviceName: s.name, duration: s.duration, price: s.price, therapistId: th.id, date, time, notes: '', status, source: pick(['seed', 'member', 'admin']), createdAt: addDays(date, -1) + 'T09:00:00' });
       }
     }
-    /* reservasi Budi untuk demo dashboard member */
     reservations.push({ id: 'res_budi_demo', code: 'RES' + t.replace(/-/g, '') + '-900', memberId: 'mem_budi', customerName: 'Budi Santoso', phone: '', serviceId: 'svc_1', serviceName: 'Traditional Reflexology', duration: 60, price: 85000, therapistId: 'th_4', date: addDays(t, 3), time: '14:00', notes: '', status: 'confirmed', source: 'seed', createdAt: now });
 
-    const notifications = [
-      { id: 'not_1', title: 'Reservasi baru', msg: 'Ada reservasi baru dari Siti Aminah.', type: 'reservation', roles: ['admin', 'supervisor'], userId: null, readBy: [], createdAt: now },
-      { id: 'not_2', title: 'Promo terbaru', msg: 'Promo Hari Ini kini aktif: diskon 10% (DEMO).', type: 'promo', roles: ['member'], userId: null, readBy: [], createdAt: now },
-      { id: 'not_3', title: 'Reservasi dikonfirmasi', msg: 'Reservasi Traditional Reflexology Anda telah dikonfirmasi.', type: 'reservation', roles: null, userId: 'u_member', readBy: [], createdAt: now }
-    ];
-    const activityLogs = [{ id: 'log_1', type: 'system', text: 'Data demo dibuat', by: 'Sistem', createdAt: now }];
+    /* ---- notifikasi & log aktivitas (pembayaran, reservasi, promo) ---- */
+    const R = ['admin', 'supervisor'], rd = ['u_admin', 'u_super'];
+    tx.slice(-45).forEach((x, i, a) => {
+      const old = x.date < t, mt = DB_METHOD[x.method];
+      notifications.push({ id: 'not_p' + i, title: x.payStatus === 'lunas' ? 'Pembayaran diterima' : 'Pembayaran tertunda', msg: x.code + ' · ' + x.customerName + ' · ' + mt + ' · Rp ' + x.total.toLocaleString('id-ID'), type: x.payStatus === 'lunas' ? 'payment' : 'transaction', roles: R, userId: null, readBy: old && i < a.length - 8 ? rd.slice() : [], createdAt: x.createdAt });
+    });
+    reservations.filter(r => r.status === 'pending').slice(0, 8).forEach((r, i) => notifications.push({ id: 'not_r' + i, title: 'Reservasi baru', msg: 'Ada reservasi baru dari ' + r.customerName + ' (' + r.date + ' ' + r.time + ').', type: 'reservation', roles: R, userId: null, readBy: [], createdAt: new Date(Date.now() - (i + 1) * 37 * 60000).toISOString() }));
+    notifications.push({ id: 'not_2', title: 'Promo terbaru', msg: 'Promo Hari Ini kini aktif: diskon 10% (DEMO).', type: 'promo', roles: ['member'], userId: null, readBy: [], createdAt: now },
+      { id: 'not_3', title: 'Reservasi dikonfirmasi', msg: 'Reservasi Traditional Reflexology Anda telah dikonfirmasi.', type: 'reservation', roles: null, userId: 'u_member', readBy: [], createdAt: now });
+    tx.slice(-60).forEach((x, i) => activityLogs.push({ id: 'log_t' + i, type: 'activity', text: 'Transaksi ' + x.code + ' Rp ' + x.total.toLocaleString('id-ID') + ' (' + DB_METHOD[x.method] + (x.payStatus === 'lunas' ? '' : ', belum lunas') + ')', by: 'Admin Kayuputih', createdAt: x.createdAt }));
+    activityLogs.push({ id: 'log_1', type: 'system', text: 'Data demo dibuat (' + tx.length + ' transaksi sejak ' + START + ')', by: 'Sistem', createdAt: now });
 
     const data = { users, members, services, reservations, transactions: tx, therapists, promotions, notifications, attendance: [], settings: defaultSettings(), activityLogs, gallery };
     COLS.forEach(c => write(c, data[c]));
     write('version', VERSION);
     silent--; emit('*');
   }
-  function init() { if (read('version', 0) !== VERSION) { if (!read('version', 0) || !read('users', null)) seed(); else write('version', VERSION); } COLS.forEach(c => { if (read(c, null) === null) write(c, c === 'settings' ? {} : []); }); }
+  const DB_METHOD = METHOD;
+  const weekdayOf = s => parseYmd(s).getDay();
+  /* data bawaan (seed) vs data buatan pengguna — dipakai saat migrasi versi */
+  const SEEDRX = { users: /^u_(admin|super|member)$/, members: /^mem_(budi|\d+)$/, reservations: /^res_(\d{8}_\d+|budi_demo)$/, transactions: /^trx_\d{8}_\d+$/ };
+  function migrate() {
+    const keep = {}; ['settings', 'users', 'members', 'reservations', 'transactions', 'attendance'].forEach(c => keep[c] = read(c, c === 'settings' ? {} : []));
+    seed(); silent++;
+    write('settings', Object.assign({}, defaultSettings(), keep.settings));
+    const oldU = keep.users.filter(u => u && u.id); const uIds = new Set(oldU.map(u => u.id));
+    write('users', all('users').filter(u => !uIds.has(u.id)).concat(oldU));
+    ['members', 'reservations', 'transactions'].forEach(c => { const extra = keep[c].filter(x => x && x.id && !SEEDRX[c].test(x.id)); if (extra.length) write(c, all(c).concat(extra)); });
+    write('attendance', keep.attendance); silent--; emit('*');
+  }
+  function init() { const v = read('version', 0); if (v !== VERSION) { if (!v || !read('users', null)) seed(); else migrate(); } COLS.forEach(c => { if (read(c, null) === null) write(c, c === 'settings' ? {} : []); }); }
 
   /* ---------- notifications / logs ---------- */
   function notify(n) { return insert('notifications', Object.assign({ type: 'info', roles: null, userId: null, readBy: [] }, n)); }
@@ -362,19 +405,35 @@
     const subtotal = d.items.reduce((a, i) => a + i.price * i.qty, 0);
     const discount = Math.min(Math.max(0, +d.discount || 0), subtotal);
     const date = d.date || today();
+    if ((d.payStatus || 'lunas') === 'lunas' && (d.method || 'tunai') === 'tunai' && d.paidAmount != null && +d.paidAmount < subtotal - discount) return { ok: false, error: 'Uang diterima kurang dari total tagihan.' };
     const item = insert('transactions', { code: nextCode('TRX', 'transactions', date), date, memberId: d.memberId || null, customerName: d.customerName || 'Pelanggan Umum', items: d.items, subtotal, discount, promoCode: d.promoCode || '', total: subtotal - discount, method: d.method || 'tunai', payStatus: d.payStatus || 'lunas', therapistId: d.therapistId || '', reservationId: d.reservationId || '', pointsAwarded: false, note: d.note || '', cashier: actor || '' });
+    if ((d.payStatus || 'lunas') === 'lunas') { const pay = payInfo(d, item.total); if (!pay.ok) { remove('transactions', item.id); return pay; } update('transactions', item.id, pay.data); }
     if (d.voucherId && d.memberId) { const m = get('members', d.memberId); if (m) update('members', m.id, { vouchers: (m.vouchers || []).map(v => v.id === d.voucherId ? Object.assign({}, v, { used: true }) : v) }); }
     if (d.reservationId) setReservationStatus(d.reservationId, 'done', actor);
     awardPoints(item);
     const mem = item.memberId ? get('members', item.memberId) : null;
-    notify({ title: 'Transaksi berhasil', msg: item.code + ' · ' + item.customerName + ' · Rp ' + item.total.toLocaleString('id-ID'), type: 'transaction', roles: ['admin', 'supervisor'] });
-    if (mem && mem.userId) notify({ title: 'Transaksi berhasil', msg: 'Terima kasih! Transaksi ' + item.code + ' tercatat.', type: 'transaction', userId: mem.userId });
+    const lunas = item.payStatus === 'lunas';
+    notify({ title: lunas ? 'Pembayaran diterima' : 'Pembayaran tertunda', msg: item.code + ' · ' + item.customerName + ' · ' + METHOD[item.method] + ' · Rp ' + item.total.toLocaleString('id-ID'), type: lunas ? 'payment' : 'transaction', roles: ['admin', 'supervisor'] });
+    if (mem && mem.userId) notify({ title: lunas ? 'Pembayaran berhasil' : 'Transaksi tercatat', msg: lunas ? 'Terima kasih! Pembayaran ' + item.code + ' via ' + METHOD[item.method] + ' diterima.' : 'Transaksi ' + item.code + ' tercatat, menunggu pembayaran.', type: lunas ? 'payment' : 'transaction', userId: mem.userId });
     log('Transaksi ' + item.code + ' Rp ' + item.total.toLocaleString('id-ID'), actor);
     return { ok: true, item: get('transactions', item.id) };
   }
-  function markPaid(id, actor) {
+  /* data pembayaran: tunai → uang diterima & kembalian; transfer/QRIS → nominal pas + referensi */
+  function payInfo(d, total) {
+    const method = d.method || 'tunai';
+    if (method === 'tunai') {
+      const paid = d.paidAmount == null || d.paidAmount === '' ? total : Math.round(+d.paidAmount);
+      if (!(paid >= total)) return { ok: false, error: 'Uang diterima kurang dari total tagihan.' };
+      return { ok: true, data: { paidAmount: paid, change: paid - total, paidAt: new Date().toISOString() } };
+    }
+    return { ok: true, data: { paidAmount: total, change: 0, payRef: String(d.payRef || '').trim(), payBank: String(d.payBank || '').trim(), paidAt: new Date().toISOString() } };
+  }
+  function markPaid(id, actor, pay) {
     const tx = get('transactions', id); if (!tx) return null;
-    const u = update('transactions', id, { payStatus: 'lunas' }); awardPoints(u); log('Transaksi ' + tx.code + ' dilunasi', actor); return u;
+    const d = Object.assign({ method: tx.method }, pay || {}); const p = payInfo(d, tx.total); if (!p.ok) return p;
+    const u = update('transactions', id, Object.assign({ payStatus: 'lunas', method: d.method }, p.data)); awardPoints(u);
+    notify({ title: 'Pembayaran diterima', msg: tx.code + ' · ' + tx.customerName + ' · ' + METHOD[d.method] + ' · Rp ' + tx.total.toLocaleString('id-ID'), type: 'payment', roles: ['admin', 'supervisor'] });
+    log('Transaksi ' + tx.code + ' dilunasi via ' + METHOD[d.method], actor); return u;
   }
   function removeTransaction(id, actor) {
     const tx = get('transactions', id); if (!tx) return false;
@@ -405,6 +464,6 @@
     init, all, get, insert, update, remove, query, settings, saveSettings, notify, notifsFor, markRead, log,
     createMember, removeMember, memberStats, adjustPoints, redeem, nextMemberNumber,
     createReservation, setReservationStatus, canCancel, checkSlot, slotsFor, workingTherapists,
-    validPromo, createTransaction, markPaid, removeTransaction, awardPoints, backup, restore, reset, read, write };
+    validPromo, createTransaction, markPaid, payInfo, migrate, removeTransaction, awardPoints, backup, restore, reset, read, write };
   if (typeof module !== 'undefined') module.exports = global.DB;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -70,3 +70,6 @@
     UI.toast('Password berhasil diganti. Silakan masuk.'); $('#fStep1').hidden = false; $('#fStep2').hidden = true; $('#fNew').value = ''; $('#fCodeIn').value = ''; tab('login');
   };
 })();
+
+/* tombol kembali: bila datang dari halaman website ini, kembali ke halaman sebelumnya; jika tidak, ke beranda */
+(function () { var b = document.getElementById('backBtn'); if (!b) return; b.addEventListener('click', function (e) { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (x) { } }); })();

@@ -33,3 +33,12 @@ Semua akses data lewat `DB` (`all/get/insert/update/remove/query`) dan `Auth`. G
 - **PWA**: `manifest.webmanifest`, `sw.js`, `pwa.js`. Tombol ikon unduh muncul di header (dan di dashboard) saat browser mendukung instal; di iPhone tombol menampilkan panduan "Tambahkan ke Layar Utama". PWA hanya aktif lewat HTTPS (GitHub Pages sudah HTTPS).
 - Semua path relatif, sehingga aman di sub-path seperti `/Pijat/`.
 - Jika setelah update tampilan lama masih muncul, tutup lalu buka ulang aplikasi/tab (service worker memperbarui cache di latar belakang).
+
+## Pembaruan v5 (Nov 2026)
+- **Login**: tombol Kembali (tampil di HP & PC).
+- **Kasir**: pembayaran Tunai (uang diterima + kembalian), Transfer (rekening + referensi), QRIS (gambar `qris.webp`, bisa diganti di Pengaturan → Pembayaran). Bayar nanti → Lunasi dari daftar transaksi. Filter bulan/status/metode.
+- **Struk modern**: cetak 80mm/A4, unduh PNG, unduh PDF, bagikan (WhatsApp/aplikasi).
+- **Desain 2026**: `modern.css` (header kaca, hero baru, carousel geser di HP, FAQ, marquee, navigasi bawah melayang, dark mode).
+- **Data dummy**: 1 Okt 2026 s.d. hari ini, ±2× lebih ramai (±380 transaksi, ±300 reservasi, notifikasi pembayaran). Data lama dimigrasi otomatis (pengaturan, akun, dan data buatan sendiri dipertahankan).
+- **Dashboard**: rekap per bulan, grafik 60/90 hari. **Pengaturan → Diagnostik & Uji**: cek bug data, ukur performa, uji beban +200 transaksi.
+- QRIS bawaan = QRIS yang Anda unggah (atas nama Riki Hermawan). Ganti dengan QRIS Kayuputih sebelum dipakai nyata.

@@ -28,7 +28,7 @@
   function header() {
     const u = Auth.current();
     return '<div class="container hd"><a class="brand" href="#beranda" aria-label="Kayuputih — beranda">' + UI.logo(46) + '<div><b>KAYUPUTIH</b><small>family reflexology</small></div></a>' +
-      '<nav class="nav" id="nav" aria-label="Navigasi utama">' + [['beranda', 'Beranda'], ['layanan', 'Layanan'], ['harga', 'Harga'], ['promo', 'Promo'], ['galeri', 'Galeri'], ['tentang', 'Tentang Kami'], ['lokasi', 'Lokasi']].map(x => '<a href="#' + x[0] + '" data-sec="' + x[0] + '">' + x[1] + '</a>').join('') + '</nav>' +
+      '<nav class="nav" id="nav" aria-label="Navigasi utama">' + [['beranda', 'Beranda'], ['layanan', 'Layanan'], ['harga', 'Harga'], ['promo', 'Promo'], ['galeri', 'Galeri'], ['tentang', 'Tentang'], ['faq', 'FAQ'], ['lokasi', 'Lokasi']].map(x => '<a href="#' + x[0] + '" data-sec="' + x[0] + '">' + x[1] + '</a>').join('') + '</nav>' +
       '<div class="hd-act"><button class="icon-btn" data-install hidden aria-label="Instal aplikasi" title="Instal aplikasi">' + UI.icon('download') + '</button><button class="icon-btn" data-theme-toggle data-theme-ic aria-label="Ganti tema terang/gelap"></button>' +
       '<a class="btn btn-ghost btn-sm hd-login" href="' + (u ? Auth.HOME[u.role] : 'login.html') + '">' + UI.icon('user') + '<span>' + (u ? 'Dashboard' : 'Login Member') + '</span></a>' +
       '<a class="btn btn-primary btn-sm hd-cta" href="' + reserveUrl() + '">Reservasi Sekarang</a><button class="icon-btn burger" id="burger" aria-label="Buka menu" aria-expanded="false">' + UI.icon('menu') + '</button></div></div>';
@@ -42,7 +42,7 @@
       (svcs.length ? '<label for="qSvc">Layanan</label><select class="input" id="qSvc">' + svcs.map(x => '<option value="' + x.id + '">' + esc(x.name) + '</option>').join('') + '</select><div class="q-meta" id="qMeta"></div><a class="btn btn-primary btn-block" id="qGo" href="' + reserveUrl(svcs[0].id) + '">Pilih Jam ' + UI.icon('arrow') + '</a>' : '<p class="muted">Layanan belum tersedia.</p>') +
       '<ul class="hc-pts"><li>' + UI.icon('check') + 'Tanpa telepon, 24 jam</li><li>' + UI.icon('check') + 'Poin reward tiap kunjungan</li><li>' + UI.icon('clock') + 'Buka ' + esc(s.openTime) + ' – ' + esc(s.closeTime) + '</li></ul></aside>';
     return '<section class="hero" id="beranda" style="--hero:url(\'' + esc(s.heroImage) + '\')"><span class="orb o1"></span><span class="orb o2"></span><div class="container hero-g"><div class="hero-copy"><span class="eyebrow">' + UI.icon('leaf') + ' Family Reflexology · Palu</span><h1>' + esc(first) + (rest ? ',<span>' + esc(rest) + '</span>' : '') + '</h1><p class="lead">' + esc(s.heroText) + '</p><div class="hero-cta"><a class="btn btn-primary btn-lg" href="' + reserveUrl() + '">Reservasi Sekarang ' + UI.icon('arrow') + '</a><a class="btn btn-light btn-lg" href="#layanan">Lihat Layanan</a></div>' +
-      '<div class="hero-proof"><span class="stars sm">' + [1, 2, 3, 4, 5].map(() => UI.icon('star')).join('') + '</span><b>' + esc(s.rating) + '/5</b><small>dari ' + UI.num(s.reviews) + ' ulasan Google</small></div></div>' + card + '</div><div class="hero-curve"></div></section>' +
+      '<ul class="hero-chips"><li>' + UI.icon('check') + 'Reservasi online 24 jam</li><li>' + UI.icon('wallet') + 'Tunai · Transfer · QRIS</li><li>' + UI.icon('gift') + 'Poin reward member</li></ul><div class="hero-proof"><span class="stars sm">' + [1, 2, 3, 4, 5].map(() => UI.icon('star')).join('') + '</span><b>' + esc(s.rating) + '/5</b><small>dari ' + UI.num(s.reviews) + ' ulasan Google</small></div></div>' + card + '</div><div class="hero-curve"></div></section>' +
       '<div class="container trust"><div class="trust-i rv">' + UI.icon('star', 'star') + '<div><b>' + esc(s.rating) + '/5</b><small>' + UI.num(s.reviews) + ' ulasan Google</small></div></div>' +
       '<div class="trust-i rv" style="--d:.08s">' + UI.icon('users') + '<div><b>Family</b><small>Reflexology</small></div></div>' +
       '<div class="trust-i rv" style="--d:.16s">' + UI.icon('pin') + '<div><b>Lokasi</b><small>Palu, Sulawesi Tengah</small></div></div>' +
@@ -59,7 +59,7 @@
   function services() {
     const list = DB.all('services').filter(x => x.active);
     return '<section class="sec" id="layanan"><div class="container">' + secHead('Layanan Kami', 'Pilih Perawatan yang Sesuai untuk Anda', 'Setiap layanan dilakukan dengan nyaman dan ramah.') +
-      (list.length ? '<div class="grid g3">' + list.map((x, i) => '<article class="svc rv" style="--d:' + (i % 3) * .08 + 's"><div class="ph">' + UI.img(x.image, x.name) + '<span class="tag">' + UI.icon('clock') + x.duration + ' menit</span></div><div class="bd"><h3>' + esc(x.name) + demoTag(x) + '</h3><p>' + esc(x.description) + '</p><div class="ft"><span class="price"><small>Mulai</small>' + UI.rp(x.price) + '</span><a class="btn btn-primary btn-sm" href="' + reserveUrl(x.id) + '">Reservasi ' + UI.icon('arrow') + '</a></div></div></article>').join('') + '</div>' : UI.empty('Layanan belum tersedia.')) + '</div></section>';
+      (list.length ? '<div class="grid g3 snap">' + list.map((x, i) => '<article class="svc rv" style="--d:' + (i % 3) * .08 + 's"><div class="ph">' + UI.img(x.image, x.name) + '<span class="tag">' + UI.icon('clock') + x.duration + ' menit</span></div><div class="bd"><h3>' + esc(x.name) + demoTag(x) + '</h3><p>' + esc(x.description) + '</p><div class="ft"><span class="price"><small>Mulai</small>' + UI.rp(x.price) + '</span><a class="btn btn-primary btn-sm" href="' + reserveUrl(x.id) + '">Reservasi ' + UI.icon('arrow') + '</a></div></div></article>').join('') + '</div>' : UI.empty('Layanan belum tersedia.')) + '</div></section>';
   }
   function steps() {
     const L = [['Pilih Layanan', 'Tentukan perawatan favorit Anda dari daftar layanan.'], ['Pilih Jadwal', 'Pilih tanggal, jam, dan terapis yang tersedia.'], ['Datang & Rileks', 'Tunjukkan kode reservasi, lalu nikmati waktu Anda.']];
@@ -73,7 +73,7 @@
   function promos() {
     const t = DB.today(); const list = DB.all('promotions').filter(p => p.active && p.startDate <= t && p.endDate >= t);
     return '<section class="sec" id="promo"><div class="container">' + secHead('Promo &amp; Paket Spesial', 'Lebih Hemat, Lebih Nyaman', 'Salin kode promo, lalu gunakan saat transaksi di kasir.') +
-      (list.length ? '<div class="grid g3">' + list.map((p, i) => '<article class="promo rv" style="--d:' + (i % 3) * .08 + 's">' + UI.img(p.image, p.title) + '<span class="off-b">' + (p.discType === 'percent' ? p.value + '%' : UI.rp(p.value)) + '<small>OFF</small></span><div class="bd"><span class="kind">' + esc(p.kind) + '</span><h3>' + esc(p.title) + '</h3><p>' + esc(p.description) + '</p>' + (p.packagePrice ? '<p><b>Harga paket ' + UI.rp(p.packagePrice) + '</b></p>' : '') + '<div class="row"><button class="code" data-copy="' + esc(p.code) + '" title="Salin kode">' + UI.icon('copy') + esc(p.code) + '</button><small>s.d. ' + UI.date(p.endDate) + '</small></div></div></article>').join('') + '</div>' : UI.empty('Belum ada promo aktif saat ini.', 'tag')) + '</div></section>';
+      (list.length ? '<div class="grid g3 snap">' + list.map((p, i) => '<article class="promo rv" style="--d:' + (i % 3) * .08 + 's">' + UI.img(p.image, p.title) + '<span class="off-b">' + (p.discType === 'percent' ? p.value + '%' : UI.rp(p.value)) + '<small>OFF</small></span><div class="bd"><span class="kind">' + esc(p.kind) + '</span><h3>' + esc(p.title) + '</h3><p>' + esc(p.description) + '</p>' + (p.packagePrice ? '<p><b>Harga paket ' + UI.rp(p.packagePrice) + '</b></p>' : '') + '<div class="row"><button class="code" data-copy="' + esc(p.code) + '" title="Salin kode">' + UI.icon('copy') + esc(p.code) + '</button><small>s.d. ' + UI.date(p.endDate) + '</small></div></div></article>').join('') + '</div>' : UI.empty('Belum ada promo aktif saat ini.', 'tag')) + '</div></section>';
   }
   function gallery() {
     const list = DB.all('gallery'); const cats = ['Semua'].concat([...new Set(list.map(g => g.category))]);
@@ -91,6 +91,23 @@
       '<div class="row"><a class="btn btn-primary" href="' + dirLink(s) + '" target="_blank" rel="noopener">' + UI.icon('pin') + ' Petunjuk Arah</a>' + (wa ? '<a class="btn btn-ghost" href="' + wa + '" target="_blank" rel="noopener">' + UI.icon('whatsapp') + ' Hubungi Kami</a>' : '<button class="btn btn-ghost" data-nocontact>' + UI.icon('phone') + ' Hubungi Kami</button>') + '<a class="btn btn-ghost" href="' + esc(s.mapsUrl) + '" target="_blank" rel="noopener">Buka Google Maps</a></div></div>' +
       '<div class="map"><iframe title="Peta lokasi ' + esc(s.businessName) + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=' + encodeURIComponent(s.businessName + ' ' + s.address) + '&output=embed"></iframe></div></div></div></section>';
   }
+
+  function payStrip() {
+    const L = [['cash', 'Tunai'], ['bank', 'Transfer Bank'], ['qr', 'QRIS'], ['calendar', 'Reservasi Online'], ['gift', 'Poin Reward'], ['shield', 'Harga Transparan'], ['leaf', 'Suasana Nyaman'], ['users', 'Cocok untuk Keluarga']];
+    const row = L.map(x => '<span class="mq-i">' + UI.icon(x[0]) + x[1] + '</span>').join('');
+    return '<div class="marquee" aria-label="Metode pembayaran dan keunggulan"><div class="mq-t">' + row + row + '</div></div>';
+  }
+  function faq(s) {
+    const per = Number(s.pointRate) || 10000;
+    const Q = [
+      ['Bagaimana cara reservasi?', 'Pilih layanan, tanggal, dan jam langsung dari HP atau komputer, lalu tunjukkan kode reservasi saat datang. Reservasi memerlukan login member (gratis).'],
+      ['Apa saja metode pembayaran?', 'Pembayaran dapat dilakukan secara tunai, transfer bank, atau QRIS di kasir. Struk pembayaran dapat dicetak atau dikirim sebagai gambar/PDF.'],
+      ['Apakah reservasi bisa dibatalkan?', 'Bisa, selama masih ' + (Number(s.cancelHours) || 0) + ' jam atau lebih sebelum jadwal. Pembatalan dilakukan dari dashboard member.'],
+      ['Bagaimana sistem poin member?', 'Setiap belanja kelipatan Rp ' + per.toLocaleString('id-ID') + ' mendapat 1 poin. Poin dapat ditukar dengan promo atau voucher tertentu.'],
+      ['Jam buka dan lokasi?', 'Kami buka setiap hari pukul ' + esc(s.openTime) + ' – ' + esc(s.closeTime) + '. Alamat: ' + esc(s.address)]
+    ];
+    return '<section class="sec" id="faq"><div class="container narrow">' + secHead('FAQ', 'Pertanyaan yang Sering Diajukan', '') + '<div class="faq">' + Q.map((q, i) => '<details class="rv" style="--d:' + i * .05 + 's"' + (i === 0 ? ' open' : '') + '><summary>' + q[0] + UI.icon('plus') + '</summary><p>' + q[1] + '</p></details>').join('') + '</div></div></section>';
+  }
   function cta(s) {
     return '<section class="cta-band"><div class="container cta-in rv"><div><h2>Siap Melepas Penat Hari Ini?</h2><p>Amankan jadwal Anda sekarang — cepat, mudah, tanpa antre telepon.</p></div><div class="row"><a class="btn btn-primary btn-lg" href="' + reserveUrl() + '">Reservasi Sekarang</a><a class="btn btn-light btn-lg" href="' + dirLink(s) + '" target="_blank" rel="noopener">' + UI.icon('pin') + ' Petunjuk Arah</a></div></div></section>';
   }
@@ -106,17 +123,22 @@
   function render() {
     const s = DB.settings();
     $('#hdr').innerHTML = header();
-    $('#site').innerHTML = hero(s) + why() + services() + steps() + prices() + promos() + gallery() + about(s) + locSec(s) + cta(s);
+    $('#site').innerHTML = hero(s) + payStrip() + why() + services() + steps() + prices() + promos() + gallery() + about(s) + faq(s) + locSec(s) + cta(s);
     $('#foot').innerHTML = footer(s);
     $('#mbar').innerHTML = '<a class="btn btn-primary" href="' + reserveUrl() + '">' + UI.icon('calendar') + ' Reservasi</a><a class="btn btn-ghost" href="' + dirLink(s) + '" target="_blank" rel="noopener">' + UI.icon('pin') + ' Arah</a>';
     const wa = waLink(s, 'Halo Kayuputih, saya ingin bertanya.'); const f = $('#waFloat'); if (wa) { f.href = wa; f.target = '_blank'; f.rel = 'noopener'; f.innerHTML = UI.icon('whatsapp'); f.hidden = false; }
     UI.setTheme(UI.theme()); if (window.PWA) PWA.refresh();
-    quick(); observe();
+    quick(); observe(); counters();
   }
   function quick() {
     const sel = $('#qSvc'); if (!sel) return;
     const upd = () => { const x = DB.get('services', sel.value); if (!x) return; $('#qMeta').innerHTML = UI.icon('clock') + x.duration + ' menit · <b>' + UI.rp(x.price) + '</b>'; $('#qGo').href = reserveUrl(x.id); };
     sel.addEventListener('change', upd); upd();
+  }
+  function counters() {
+    const el = UI.$$('.trust-i b, .hero-proof b'); if (matchMedia('(prefers-reduced-motion:reduce)').matches || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; io.unobserve(e.target); const t = e.target, m = t.textContent.match(/^([\d.,]+)(.*)$/); if (!m) return; const dec = /,/.test(m[1]), to = parseFloat(m[1].replace(',', '.')); const t0 = performance.now(); (function f(n) { const p = Math.min(1, (n - t0) / 900), v = to * (1 - Math.pow(1 - p, 3)); t.textContent = (dec ? v.toFixed(1).replace('.', ',') : Math.round(v)) + m[2]; if (p < 1) requestAnimationFrame(f); })(t0); }), { threshold: .6 });
+    el.forEach(x => io.observe(x));
   }
   function observe() {
     const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 }) : null;
@@ -126,8 +148,9 @@
   render();
 
   /* header sticky shadow + menu aktif */
-  addEventListener('scroll', () => $('#hdr').classList.toggle('sc', scrollY > 10), { passive: true });
-  const secs = ['beranda', 'layanan', 'harga', 'promo', 'galeri', 'tentang', 'lokasi'];
+  const prog = document.createElement('i'); prog.className = 'scroll-prog'; document.body.appendChild(prog);
+  addEventListener('scroll', () => { $('#hdr').classList.toggle('sc', scrollY > 10); const h = document.documentElement.scrollHeight - innerHeight; prog.style.transform = 'scaleX(' + (h > 0 ? Math.min(1, scrollY / h) : 0) + ')'; }, { passive: true });
+  const secs = ['beranda', 'layanan', 'harga', 'promo', 'galeri', 'tentang', 'faq', 'lokasi'];
   if ('IntersectionObserver' in window) {
     const so = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) UI.$$('[data-sec]').forEach(a => a.classList.toggle('on', a.dataset.sec === e.target.id)); }), { rootMargin: '-45% 0px -50% 0px' });
     secs.forEach(id => { const el = document.getElementById(id); if (el) so.observe(el); });

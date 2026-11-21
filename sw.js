@@ -1,8 +1,8 @@
 /* sw.js — service worker Kayuputih: cache cangkang aplikasi agar cepat & bisa dibuka offline */
-const V = 'kp-v2', IMG = 'kp-img-v1';
-const SHELL = ['./', 'index.html', 'login.html', 'member.html', 'admin.html', 'supervisor.html', 'style.css', 'login.css', 'member.css', 'admin.css', 'supervisor.css',
+const V = 'kp-v4', IMG = 'kp-img-v1';
+const SHELL = ['./', 'index.html', 'login.html', 'member.html', 'admin.html', 'supervisor.html', 'style.css', 'modern.css', 'login.css', 'member.css', 'admin.css', 'supervisor.css',
   'database.js', 'auth.js', 'components.js', 'charts.js', 'receipt.js', 'script.js', 'login.js', 'member.js', 'admin.js', 'supervisor.js', 'pwa.js',
-  'logo.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon.png', 'manifest.webmanifest'];
+  'logo.png', 'qris.webp', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon.png', 'manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => { })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== V && x !== IMG).map(x => caches.delete(x)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {

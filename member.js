@@ -124,7 +124,7 @@
   /* ---------- Profil ---------- */
   const pf = [
     { name: 'name', label: 'Nama lengkap', required: true, span: 2 }, { name: 'phone', label: 'Nomor HP', type: 'tel', required: true, span: 1 }, { name: 'email', label: 'Email', type: 'email', required: true, span: 1 },
-    { name: 'birth', label: 'Tanggal lahir', type: 'date', span: 1 }, { name: 'address', label: 'Alamat', type: 'textarea', span: 2 }, { name: 'photo', label: 'Foto profil', type: 'image', span: 2 }
+    { name: 'birth', label: 'Tanggal lahir', type: 'date', span: 1 }, { name: 'address', label: 'Alamat', type: 'textarea', span: 2 }, { name: 'photo', label: 'Foto profil', type: 'avatar', span: 2 }
   ];
   const profil = {
     render() {
@@ -133,6 +133,8 @@
     },
     mount(el) {
       const f = UI.$('#pForm', el); if (!f) return; UI.bindFields(f);
+      /* foto langsung tersimpan setelah dipotong (seperti WhatsApp), tanpa menghapus isian lain yang belum disimpan */
+      f.addEventListener('avchange', e => { const mm = me(); if (!mm) return; const nm = f.elements.name.value.trim() || mm.name; const all = DB.all('members'), i = all.findIndex(x => x.id === mm.id); if (i < 0) return; all[i] = Object.assign({}, all[i], { photo: e.detail.value }); DB.write('members', all); UI.setAvatar(nm, e.detail.value); UI.toast(e.detail.value ? 'Foto profil diperbarui.' : 'Foto profil dihapus.'); });
       f.addEventListener('submit', e => {
         e.preventDefault(); const v = UI.collect(f, pf); if (!v) return; const m = me(); const err = UI.$('[data-formerr]', f); err.textContent = '';
         const email = v.email.toLowerCase();

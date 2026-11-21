@@ -39,6 +39,7 @@
     trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',
     check: '<path d="M4 12l5 5L20 6"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
     cash: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9v.01M18 15v.01"/>', bank: '<path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/>', qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h3M21 17v4"/>', send: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
+    camera: '<path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/>',
     print: '<path d="M6 9V3h12v6M6 18H3v-8h18v8h-3M6 14h12v7H6z"/>', download: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
     upload: '<path d="M12 15V3M7 8l5-5 5 5M4 21h16"/>',
     eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
@@ -114,6 +115,53 @@
       fr.readAsDataURL(file);
     });
   };
+  /* ---------- crop foto profil (gaya WhatsApp): geser, zoom, putar ---------- */
+  UI.cropImage = function (file, o) {
+    o = o || {}; const OUT = o.size || 512;
+    return new Promise((resolve) => {
+      if (!file || !/^image\//.test(file.type)) { UI.toast('File harus berupa gambar.', 'err'); return resolve(null); }
+      if (file.size > 25 * 1024 * 1024) { UI.toast('Ukuran foto maksimal 25 MB.', 'err'); return resolve(null); }
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onerror = () => { URL.revokeObjectURL(url); UI.toast('Gambar tidak dapat dibaca. Coba foto lain (JPG/PNG).', 'err'); resolve(null); };
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let src = document.createElement('canvas'); const k0 = Math.min(1, 1800 / Math.max(img.naturalWidth, img.naturalHeight)); src.width = Math.round(img.naturalWidth * k0); src.height = Math.round(img.naturalHeight * k0); src.getContext('2d').drawImage(img, 0, 0, src.width, src.height);
+        const S = 360, D = Math.round(S * .86); let z = 1, ox = 0, oy = 0, done = false;
+        const m = UI.modal({ title: o.title || 'Atur Foto Profil', size: 'md', focus: false, onClose: () => { if (!done) resolve(null); },
+          body: '<div class="crop"><canvas class="crop-cv" width="' + S + '" height="' + S + '" aria-label="Area pemotongan foto"></canvas></div><div class="crop-zoom"><button type="button" class="icon-btn" data-zo aria-label="Perkecil">−</button><input type="range" min="1" max="4" step="0.01" value="1" aria-label="Zoom"><button type="button" class="icon-btn" data-zi aria-label="Perbesar">+</button></div><p class="muted crop-hint">Geser foto &amp; atur zoom agar wajah berada di dalam lingkaran.</p>',
+          footer: '<button class="btn btn-ghost" data-close>Batal</button><button class="btn btn-ghost" data-rot>' + UI.icon('refresh') + ' Putar</button><button class="btn btn-primary" data-ok>Gunakan Foto</button>' });
+        const cv = UI.$('.crop-cv', m.el), g = cv.getContext('2d'), rg = UI.$('input[type=range]', m.el);
+        const base = () => D / Math.min(src.width, src.height), sc = () => base() * z;
+        const clamp = () => { const mx = Math.max(0, (src.width * sc() - D) / 2), my = Math.max(0, (src.height * sc() - D) / 2); ox = Math.min(mx, Math.max(-mx, ox)); oy = Math.min(my, Math.max(-my, oy)); };
+        const draw = () => {
+          clamp(); g.clearRect(0, 0, S, S); g.fillStyle = '#222'; g.fillRect(0, 0, S, S); const s = sc(); g.drawImage(src, S / 2 + ox - src.width * s / 2, S / 2 + oy - src.height * s / 2, src.width * s, src.height * s);
+          g.save(); g.fillStyle = 'rgba(20,12,6,.62)'; g.beginPath(); g.rect(0, 0, S, S); g.arc(S / 2, S / 2, D / 2, 0, Math.PI * 2, true); g.fill('evenodd'); g.restore();
+          g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2; g.beginPath(); g.arc(S / 2, S / 2, D / 2, 0, Math.PI * 2); g.stroke();
+        };
+        const setZ = v => { z = Math.min(4, Math.max(1, v)); rg.value = z; draw(); };
+        rg.addEventListener('input', () => setZ(+rg.value)); UI.$('[data-zi]', m.el).onclick = () => setZ(z + .25); UI.$('[data-zo]', m.el).onclick = () => setZ(z - .25);
+        cv.addEventListener('wheel', e => { e.preventDefault(); setZ(z * (e.deltaY < 0 ? 1.08 : .93)); }, { passive: false });
+        const pts = new Map(); let pd = 0;
+        const ratio = () => S / cv.getBoundingClientRect().width;
+        cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 2) { const [a, b] = [...pts.values()]; pd = Math.hypot(a.x - b.x, a.y - b.y); } });
+        cv.addEventListener('pointermove', e => {
+          const p = pts.get(e.pointerId); if (!p) return;
+          if (pts.size === 2) { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pd) setZ(z * d / pd); pd = d; return; }
+          ox += (e.clientX - p.x) * ratio(); oy += (e.clientY - p.y) * ratio(); p.x = e.clientX; p.y = e.clientY; draw();
+        });
+        const up = e => { pts.delete(e.pointerId); pd = 0; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+        UI.$('[data-rot]', m.el).onclick = () => { const r = document.createElement('canvas'); r.width = src.height; r.height = src.width; const c = r.getContext('2d'); c.translate(r.width / 2, r.height / 2); c.rotate(Math.PI / 2); c.drawImage(src, -src.width / 2, -src.height / 2); src = r; ox = oy = 0; draw(); };
+        UI.$('[data-ok]', m.el).onclick = () => {
+          const s = sc(), sw = D / s, sx = src.width / 2 - ox / s - sw / 2, sy = src.height / 2 - oy / s - sw / 2;
+          const out = document.createElement('canvas'); out.width = out.height = OUT; const c = out.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, OUT, OUT); c.drawImage(src, sx, sy, sw, sw, 0, 0, OUT, OUT);
+          done = true; resolve(out.toDataURL('image/jpeg', .86)); m.close();
+        };
+        draw();
+      };
+      img.src = url;
+    });
+  };
+  UI.setAvatar = function (name, photo) { UI.$$('.topbar .avatar, .hello .avatar, .side .avatar').forEach(el => { const t = document.createElement('div'); t.innerHTML = UI.avatar(name, photo, [...el.classList].filter(c => c !== 'avatar').join(' ')); el.replaceWith(t.firstChild); }); };
   const optHtml = (o, val) => (o || []).map(x => { const v = typeof x === 'object' ? x.value : x, l = typeof x === 'object' ? x.label : x; return '<option value="' + UI.esc(v) + '"' + (String(v) === String(val) ? ' selected' : '') + '>' + UI.esc(l) + '</option>'; }).join('');
   UI.fields = function (fields, v) {
     v = v || {};
@@ -124,12 +172,21 @@
       else if (f.type === 'textarea') inp = '<textarea class="input" id="' + id + '" name="' + f.name + '" rows="' + (f.rows || 3) + '"' + req + (f.placeholder ? ' placeholder="' + UI.esc(f.placeholder) + '"' : '') + '>' + UI.esc(val) + '</textarea>';
       else if (f.type === 'checkbox') return '<label class="field check span-' + (f.span || 2) + '"><input type="checkbox" name="' + f.name + '"' + (val ? ' checked' : '') + '><span>' + UI.esc(f.label) + '</span></label>';
       else if (f.type === 'days') inp = '<div class="days" data-days="' + f.name + '">' + DAYS.map((d, i) => '<label><input type="checkbox" value="' + i + '"' + ((val || []).includes(i) ? ' checked' : '') + '><span>' + d + '</span></label>').join('') + '</div>';
+      else if (f.type === 'avatar') inp = '<div class="avfield" data-av="' + f.name + '"><input type="hidden" name="' + f.name + '" value="' + UI.esc(val) + '"><button type="button" class="av-pick" data-av-pick aria-label="Ubah foto profil"><span data-av-img>' + UI.avatar((v && v.name) || 'Foto', val, 'xl') + '</span><span class="av-cam">' + UI.icon('camera') + '</span></button><div class="av-actions"><button type="button" class="btn btn-ghost btn-sm" data-av-pick>' + UI.icon('upload') + ' Pilih foto</button><button type="button" class="btn btn-ghost btn-sm" data-av-del' + (val ? '' : ' hidden') + '>' + UI.icon('trash') + ' Hapus</button></div><small class="muted">JPG/PNG. Anda dapat memotong &amp; mengatur posisi sebelum disimpan.</small><input type="file" accept="image/*" hidden></div>';
       else if (f.type === 'image') inp = '<div class="imgfield" data-img="' + f.name + '"><img src="' + UI.esc(val || UI.PLACEHOLDER) + '" alt="" onerror="this.onerror=null;this.src=UI.PLACEHOLDER"><div><input type="hidden" name="' + f.name + '" value="' + UI.esc(val) + '"><input class="input" type="text" data-url placeholder="Tempel URL gambar" value="' + UI.esc(/^data:/.test(val) ? '' : val) + '"><label class="btn btn-ghost btn-sm">' + UI.icon('upload') + ' Unggah foto<input type="file" accept="image/*" hidden></label></div></div>';
       else inp = '<input class="input" id="' + id + '" name="' + f.name + '" type="' + (f.type || 'text') + '" value="' + UI.esc(val) + '"' + req + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') + (f.step ? ' step="' + f.step + '"' : '') + (f.placeholder ? ' placeholder="' + UI.esc(f.placeholder) + '"' : '') + (f.autocomplete ? ' autocomplete="' + f.autocomplete + '"' : '') + '>';
       return '<div class="field span-' + (f.span || 2) + '"><label for="' + id + '">' + UI.esc(f.label) + (f.required ? ' <em>*</em>' : '') + '</label>' + inp + (f.hint ? '<small class="hint">' + UI.esc(f.hint) + '</small>' : '') + '<small class="err" data-err="' + f.name + '"></small></div>';
     }).join('');
   };
   UI.bindFields = function (root) {
+    UI.$$('[data-av]', root).forEach(b => {
+      const hid = UI.$('input[type=hidden]', b), box = UI.$('[data-av-img]', b), file = UI.$('input[type=file]', b), del = UI.$('[data-av-del]', b), form = b.closest('form');
+      const nm = () => (form && form.elements.name && form.elements.name.value) || 'Foto';
+      const show = () => { box.innerHTML = UI.avatar(nm(), hid.value, 'xl'); del.hidden = !hid.value; };
+      UI.$$('[data-av-pick]', b).forEach(x => x.addEventListener('click', () => { file.value = ''; file.click(); }));
+      file.addEventListener('change', async () => { const f = file.files[0]; if (!f) return; const r = await UI.cropImage(f); if (r) { hid.value = r; show(); b.dispatchEvent(new CustomEvent('avchange', { bubbles: true, detail: { value: r } })); } });
+      del.addEventListener('click', () => { hid.value = ''; show(); b.dispatchEvent(new CustomEvent('avchange', { bubbles: true, detail: { value: '' } })); });
+    });
     UI.$$('[data-img]', root).forEach(b => {
       const hid = UI.$('input[type=hidden]', b), im = UI.$('img', b), url = UI.$('[data-url]', b), file = UI.$('input[type=file]', b);
       url.addEventListener('input', () => { hid.value = url.value.trim(); im.src = hid.value || UI.PLACEHOLDER; });

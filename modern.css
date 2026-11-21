@@ -223,3 +223,16 @@ body:not(.has-mbar) .site-header{position:sticky}
   .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}.filters .grow{grid-column:1/-1}
 }
 #pyOk{order:-1;flex:1 1 100%}
+
+/* ---------- foto profil + crop ---------- */
+.avatar.xl{width:116px;height:116px;font-size:2rem}
+.avfield{display:grid;justify-items:center;gap:10px;padding:8px 0 4px;text-align:center}
+.av-pick{position:relative;border:0;background:none;padding:0;border-radius:50%;cursor:pointer}
+.av-pick .avatar{box-shadow:0 10px 30px rgba(73,48,32,.25);border:3px solid var(--surface)}
+.av-cam{position:absolute;right:2px;bottom:2px;width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:var(--leaf);color:#1f2d06;border:3px solid var(--surface);box-shadow:var(--shadow-s)}.av-cam .ic{width:18px;height:18px}
+.av-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.av-actions [hidden]{display:none}
+.crop{display:grid;place-items:center}
+.crop-cv{width:min(100%,360px);aspect-ratio:1;border-radius:20px;touch-action:none;cursor:grab;background:#222}.crop-cv:active{cursor:grabbing}
+.crop-zoom{display:flex;align-items:center;gap:10px;margin:14px auto 0;max-width:360px}.crop-zoom input{flex:1;accent-color:var(--leaf-d);height:32px}
+.crop-hint{text-align:center;margin-top:8px;font-size:.84rem}
+.modal:has(.crop) .modal-f [data-ok]{order:-1;flex:1 1 100%;min-height:50px}.modal:has(.crop) .modal-f .btn-ghost{flex:1}
